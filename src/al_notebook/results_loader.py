@@ -521,8 +521,8 @@ def load_experiment_results(*experiments, incl_current=False, incl_current_vm=Fa
 
     stores = {}
 
-    for result_dir in experiments:
-        stores.update(load_laaos_files(f"./laaos_results/{result_dir}/", tag=result_dir, prefix=result_dir + "/"))
+    #for result_dir in experiments:
+    #    stores.update(load_laaos_files(f"./laaos_results/{result_dir}/", tag=result_dir, prefix=result_dir + "/"))
 
     if incl_current:
         stores.update(load_laaos_files("./laaos/", tag="current/"))

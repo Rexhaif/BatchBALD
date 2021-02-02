@@ -1,6 +1,7 @@
 import argparse
 import sys
 import torch
+import wandb
 
 from acquisition_method import AcquisitionMethod
 from context_stopwatch import ContextStopwatch
@@ -20,6 +21,7 @@ import functools
 import itertools
 
 import os
+
 
 
 def create_experiment_config_argparser(parser):
@@ -128,7 +130,9 @@ def main():
     parser = argparse.ArgumentParser(
         description="BatchBALD", formatter_class=functools.partial(argparse.ArgumentDefaultsHelpFormatter, width=120)
     )
-    parser.add_argument("--experiment_task_id", type=str, default=None, help="experiment id")
+    parser.add_argument("--experiment_id", type=str, default='default_group', help="experiment id")
+    parser.add_argument("--run_name", type=str, default='default_run', help='instant run name')
+
     parser.add_argument(
         "--experiments_laaos", type=str, default=None, help="Laaos file that contains all experiment task configs"
     )
@@ -144,12 +148,22 @@ def main():
         )
         # Merge the experiment config with args.
         # Args take priority.
-        args = parser.parse_args(namespace=argparse.Namespace(**config[args.experiment_task_id]))
+        args = parser.parse_args(namespace=argparse.Namespace(**config[args.experiment_id]))
+        
+    wandb_run = wandb.init(
+        project='batchbald-reproduce',
+        entity='skoltech-nlp',
+        group=args.experiment_id,
+        name=args.run_name,
+        notes=args.experiment_description,
+        config=args.__dict__,
+        tags=[str(args.type), str(args.dataset), f"MC={args.num_inference_samples}", f"AL-STEP-SIZE={args.available_sample_k}"]
+    )
 
     # DONT TRUNCATE LOG FILES EVER AGAIN!!! (OFC THIS HAD TO HAPPEN AND BE PAINFUL)
     reduced_dataset = args.quickquick
-    if args.experiment_task_id:
-        store_name = args.experiment_task_id
+    if args.experiment_id:
+        store_name = args.experiment_id
         if reduced_dataset:
             store_name = "quickquick_" + store_name
     else:
@@ -281,6 +295,12 @@ def main():
                 batch_acquisition_elapsed_time=batch_acquisition_stopwatch.elapsed_time,
             )
         )
+        wandb.log({
+            'accuracy': test_metrics['accuracy'],
+            'nll': test_metrics['nll'],
+            'aquisition_elapsed_time': batch_acquisition_stopwatch.elapsed_time,
+            'training_elapsed_time': train_model_stopwatch.elapsed_time
+        })
 
         experiment_data.active_learning_data.acquire(batch.indices)
 
@@ -290,9 +310,9 @@ def main():
         if num_acquired_samples >= args.target_num_acquired_samples:
             print(f"{num_acquired_samples} acquired samples >= {args.target_num_acquired_samples}")
             break
-        if test_metrics["accuracy"] >= args.target_accuracy:
-            print(f'accuracy {test_metrics["accuracy"]} >= {args.target_accuracy}')
-            break
+        #if test_metrics["accuracy"] >= args.target_accuracy:
+        #    print(f'accuracy {test_metrics["accuracy"]} >= {args.target_accuracy}')
+        #    break
 
     print("DONE")
 
