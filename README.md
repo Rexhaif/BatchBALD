@@ -1,7 +1,8 @@
 # BatchBALD
 
-This is the code drop for our paper 
-[BatchBALD: Efficient and Diverse Batch Acquisition for Deep Bayesian Active Learning](https://arxiv.org/abs/1906.08158).
+This is reproduction code for https://github.com/BlackHC/BatchBALD
+
+Paper: [BatchBALD: Efficient and Diverse Batch Acquisition for Deep Bayesian Active Learning](https://arxiv.org/abs/1906.08158).
 
 The code comes as is.
 
@@ -9,7 +10,7 @@ See https://github.com/BlackHC/batchbald_redux and https://blackhc.github.io/bat
 
 ElementAI's Baal framework also supports BatchBALD: https://github.com/ElementAI/baal/. 
 
-Please cite us:
+Please cite as:
 
 ```
 @misc{kirsch2019batchbald,
@@ -24,19 +25,29 @@ Please cite us:
 
 ## How to run it
 
-Make sure you install all requirements using
+1. Make sure you install all requirements using
 
 ```
 conda install pytorch torchvision cudatoolkit=10.0 -c pytorch
 pip install -r requirements.txt
 ```
 
-and you can start an experiment using:
+2. Install WandB & log in
 
 ```
-python src/run_experiment.py --quickquick --num_inference_samples 10 --available_sample_k 40
+pip install wandb
+wandb login
 ```
 
-which starts an experiment on a subset of MNIST with 10 MC dropout samples and acquisition size 40.
+3. Edit src/run_experiment.py, lines 153-161, replace entity and project with your ones
 
-Have fun playing around with it!
+4. Run experiments
+```
+CUDA_VISIBLE_DEVICES=<your gpu id> SEED=<your seed> ./experiment_{batchbald,bald,random,mean_stddev}.sh
+```
+
+Seeds i used comes from ./laaos_results/paper files:
+- For BatchBALD: 887341, 741209, 424817, 332929, 211889
+- For BALD: 887341, 741209, 424817, 332929, 211889
+- For Mean-StdDev: 822934, 415068, 355046, 289629, 1017036
+- For Random: 796743, 54650, 470211, 432746, 131194
