@@ -3,11 +3,11 @@ python src/run_experiment.py \
     --dataset repeated_mnist_w_noise \
     --num_inference_samples 10 \
     --available_sample_k 10 \
-    --experiment_id rmnist_random_preset_samples \
+    --experiment_id rmnist_mean_stddev_preset_samples \
     --run_name $SEED \
     --min_candidates_per_acquired_item 100 \
     --seed $SEED \
-    --type random \
+    --type mean_stddev \
     --acquisition_method independent \
     --scoring_batch_size 512 \
     --test_batch_size 512 \
